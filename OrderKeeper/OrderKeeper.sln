@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderKeeper.API", "OrderKeeper.API\OrderKeeper.API.csproj", "{8E4B489B-EDF5-4993-8294-9BC6D3FAE4DA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C35305FC-E1E7-4F1D-9CC7-3AC53E3113F4} = {C35305FC-E1E7-4F1D-9CC7-3AC53E3113F4}
+		{A1F303D1-4FB5-4B86-B322-445A832557C6} = {A1F303D1-4FB5-4B86-B322-445A832557C6}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderKeeper.Database", "OrderKeeper.Database\OrderKeeper.Database.csproj", "{A1F303D1-4FB5-4B86-B322-445A832557C6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderKeeper.Client", "OrderKeeper.Client\OrderKeeper.Client.csproj", "{C35305FC-E1E7-4F1D-9CC7-3AC53E3113F4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8E4B489B-EDF5-4993-8294-9BC6D3FAE4DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E4B489B-EDF5-4993-8294-9BC6D3FAE4DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E4B489B-EDF5-4993-8294-9BC6D3FAE4DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E4B489B-EDF5-4993-8294-9BC6D3FAE4DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1F303D1-4FB5-4B86-B322-445A832557C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1F303D1-4FB5-4B86-B322-445A832557C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1F303D1-4FB5-4B86-B322-445A832557C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1F303D1-4FB5-4B86-B322-445A832557C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C35305FC-E1E7-4F1D-9CC7-3AC53E3113F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C35305FC-E1E7-4F1D-9CC7-3AC53E3113F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C35305FC-E1E7-4F1D-9CC7-3AC53E3113F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C35305FC-E1E7-4F1D-9CC7-3AC53E3113F4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
