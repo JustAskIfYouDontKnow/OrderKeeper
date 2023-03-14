@@ -19,11 +19,12 @@ public class Startup
     {
         services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "OrderKeeper_Api", Version = "v1"}); });
 
-        var typeOfContent = typeof(Startup);
+        var typeOfContent = typeof(PostgresContext);
 
         services.AddDbContext<PostgresContext>(
             options => options.UseNpgsql(
-                Configuration.GetConnectionString("MarketDB"), b => b.MigrationsAssembly(typeOfContent.Assembly.GetName().Name)
+                Configuration.GetConnectionString("OrderKeeperDB"),
+                b => b.MigrationsAssembly(typeOfContent.Assembly.GetName().Name)
             )
         );
 
