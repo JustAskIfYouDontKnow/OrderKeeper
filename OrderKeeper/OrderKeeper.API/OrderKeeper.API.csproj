@@ -16,10 +16,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers\Client" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\OrderKeeper.Database\OrderKeeper.Database.csproj" />
     </ItemGroup>
     
