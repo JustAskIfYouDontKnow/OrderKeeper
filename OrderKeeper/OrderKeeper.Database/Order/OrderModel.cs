@@ -14,6 +14,7 @@ public class OrderModel : AbstractModel
     [Required]
     [ForeignKey("Provider")]
     public int ProviderId { get; set; }
+    
     [Required]
     public ProviderModel Provider { get; set; }
 

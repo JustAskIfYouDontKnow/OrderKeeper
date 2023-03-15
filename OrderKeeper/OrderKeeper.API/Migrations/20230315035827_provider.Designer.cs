@@ -8,11 +8,11 @@ using OrderKeeper.Database;
 
 #nullable disable
 
-namespace OrderKeeper.Database.Migrations
+namespace OrderKeeper.API.Migrations
 {
     [DbContext(typeof(PostgresContext))]
-    [Migration("20230314131453_Provider")]
-    partial class Provider
+    [Migration("20230315035827_provider")]
+    partial class provider
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

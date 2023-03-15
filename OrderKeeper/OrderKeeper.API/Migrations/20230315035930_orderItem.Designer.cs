@@ -9,11 +9,11 @@ using OrderKeeper.Database;
 
 #nullable disable
 
-namespace OrderKeeper.Database.Migrations
+namespace OrderKeeper.API.Migrations
 {
     [DbContext(typeof(PostgresContext))]
-    [Migration("20230314131634_OrderItem")]
-    partial class OrderItem
+    [Migration("20230315035930_orderItem")]
+    partial class orderItem
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -47,7 +47,7 @@ namespace OrderKeeper.Database.Migrations
 
                     b.HasIndex("ProviderId");
 
-                    b.ToTable("OrderModel");
+                    b.ToTable("Order");
                 });
 
             modelBuilder.Entity("OrderKeeper.Database.OrderItem.OrderItemModel", b =>
@@ -76,7 +76,7 @@ namespace OrderKeeper.Database.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("OrderItemModel");
+                    b.ToTable("OrderItem");
                 });
 
             modelBuilder.Entity("OrderKeeper.Database.Provider.ProviderModel", b =>
@@ -99,7 +99,7 @@ namespace OrderKeeper.Database.Migrations
             modelBuilder.Entity("OrderKeeper.Database.Order.OrderModel", b =>
                 {
                     b.HasOne("OrderKeeper.Database.Provider.ProviderModel", "Provider")
-                        .WithMany()
+                        .WithMany("Orders")
                         .HasForeignKey("ProviderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -121,6 +121,11 @@ namespace OrderKeeper.Database.Migrations
             modelBuilder.Entity("OrderKeeper.Database.Order.OrderModel", b =>
                 {
                     b.Navigation("OrderItems");
+                });
+
+            modelBuilder.Entity("OrderKeeper.Database.Provider.ProviderModel", b =>
+                {
+                    b.Navigation("Orders");
                 });
 #pragma warning restore 612, 618
         }

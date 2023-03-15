@@ -3,10 +3,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace OrderKeeper.Database.Migrations
+namespace OrderKeeper.API.Migrations
 {
     /// <inheritdoc />
-    public partial class Provider : Migration
+    public partial class provider : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

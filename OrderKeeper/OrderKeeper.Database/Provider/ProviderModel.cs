@@ -14,11 +14,14 @@ public class ProviderModel : AbstractModel
     [MaxLength]
     public string Name { get; set; }
     
+    public List<OrderModel> Orders { get; set; }
+
     public static ProviderModel CreateModel(string name)
     {
         return new ProviderModel 
         {
-            Name = name
+            Name = name,
+            Orders = new List<OrderModel>()
         };
     }
 }
