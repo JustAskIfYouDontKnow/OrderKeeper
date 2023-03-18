@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using OrderKeeper.Database.OrderItem;
 using OrderKeeper.Database.Provider;
 
@@ -15,7 +16,6 @@ public class OrderModel : AbstractModel
     [ForeignKey("Provider")]
     public int ProviderId { get; set; }
     
-    [Required]
     public ProviderModel Provider { get; set; }
 
     [Required]
@@ -25,19 +25,17 @@ public class OrderModel : AbstractModel
     [Required]
     public DateTime Date { get; set; }
     
-    [Required]
+    
     public List<OrderItemModel> OrderItems { get; set; }
 
 
-    public static OrderModel CreateModel(string number, int providerId, ProviderModel provider, List<OrderItemModel> orderItems)
+    public static OrderModel CreateModel(string number, int providerId)
     {
         return new OrderModel
         {
             Number = number,
             Date = DateTime.UtcNow,
             ProviderId = providerId,
-            Provider = provider,
-            OrderItems = orderItems,
         };
     }
 }
