@@ -44,7 +44,7 @@ namespace OrderKeeper.API.Migrations
 
                     b.HasIndex("ProviderId");
 
-                    b.ToTable("Order");
+                    b.ToTable("Order", (string)null);
                 });
 
             modelBuilder.Entity("OrderKeeper.Database.OrderItem.OrderItemModel", b =>
@@ -73,7 +73,7 @@ namespace OrderKeeper.API.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("OrderItem");
+                    b.ToTable("OrderItem", (string)null);
                 });
 
             modelBuilder.Entity("OrderKeeper.Database.Provider.ProviderModel", b =>
@@ -90,7 +90,7 @@ namespace OrderKeeper.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Provider");
+                    b.ToTable("Provider", (string)null);
                 });
 
             modelBuilder.Entity("OrderKeeper.Database.Order.OrderModel", b =>

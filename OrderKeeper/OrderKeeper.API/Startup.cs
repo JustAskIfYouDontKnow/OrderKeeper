@@ -19,7 +19,7 @@ public class Startup
     {
         services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "OrderKeeper_Api", Version = "v1"}); });
 
-        var typeOfContent = typeof(PostgresContext);
+        var typeOfContent = typeof(Startup);
 
         services.AddDbContext<PostgresContext>(
             options => options.UseNpgsql(
@@ -29,7 +29,7 @@ public class Startup
         );
 
         services.AddControllers();
-
+        services.AddRazorPages();
         services.AddScoped<IDatabaseContainer, DatabaseContainer>();
     }
 
@@ -47,6 +47,12 @@ public class Startup
 
         dbContext.Database.Migrate();
 
-        app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=OrderKeeper}/{action=Index}/{id?}");
+            endpoints.MapRazorPages();
+        });
     }
 }

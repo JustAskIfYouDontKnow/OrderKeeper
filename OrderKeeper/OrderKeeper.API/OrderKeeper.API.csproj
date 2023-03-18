@@ -16,7 +16,14 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\OrderKeeper.Client\OrderKeeper.Client.csproj" />
       <ProjectReference Include="..\OrderKeeper.Database\OrderKeeper.Database.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Pages\Components\ProviderList\Default.cshtml" />
+      <_ContentIncludedByDefault Remove="Pages\Shared\_ProviderList.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Provider\Index.cshtml" />
     </ItemGroup>
     
 </Project>
