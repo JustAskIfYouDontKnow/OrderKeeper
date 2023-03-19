@@ -13,6 +13,9 @@ public class Order
 
     [Required]
     public string Number { get; set; }
+    
+    [Required]
+    public List<OrderItem.OrderItem> OrderItem { get; set; }
 
     [Required]
     public DateTime Date { get; set; }
