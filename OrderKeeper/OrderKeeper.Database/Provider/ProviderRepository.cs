@@ -13,7 +13,7 @@ public class ProviderRepository : AbstractRepository<ProviderModel>, IProviderRe
     {
         var model = ProviderModel.CreateModel(name);
         var result = await CreateModelAsync(model);
-        
+
         if (result == null)
         {
             throw new Exception("Provider model is not created.");
@@ -21,8 +21,8 @@ public class ProviderRepository : AbstractRepository<ProviderModel>, IProviderRe
 
         return result;
     }
-    
-    
+
+
     public async Task<ProviderModel> GetOne(int id)
     {
         var provider = await DbModel.FindAsync(id);
@@ -34,8 +34,15 @@ public class ProviderRepository : AbstractRepository<ProviderModel>, IProviderRe
 
         return provider;
     }
-    
-    
+
+
+    public async Task<List<ProviderModel>> GetAll()
+    {
+        var providers = await DbModel.OrderBy(x => x.Id).ToListAsync();
+        return providers.DistinctBy(p => p.Name).ToList();
+    }
+
+
     public async Task<bool> Delete(ProviderModel providerModel)
     {
         await DeleteModel(providerModel);
