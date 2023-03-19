@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 using OrderKeeper.Database.OrderItem;
 using OrderKeeper.Database.Provider;
+using OrderKeeper.Model.Order;
 
 namespace OrderKeeper.Database.Order;
 
@@ -34,8 +34,22 @@ public class OrderModel : AbstractModel
         return new OrderModel
         {
             Number = number,
-            Date = DateTime.UtcNow,
+            Date = DateTime.UtcNow.ToUniversalTime(),
             ProviderId = providerId,
         };
+    }
+
+
+    public bool IsSame(OrderPatch patch)
+    {
+        return patch.Number == Number &&
+               patch.ProviderId == ProviderId;
+    }
+
+
+    public void UpdateByPatch(OrderPatch patch)
+    {
+        ProviderId = patch.ProviderId;
+        Number = patch.Number;
     }
 }
