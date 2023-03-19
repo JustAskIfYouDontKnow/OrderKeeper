@@ -119,7 +119,6 @@ const addProduct = () => {
       </div>
     </td>
     <td>
-    <td>
       <div class="form-group">
         <input type="text" class="form-control" name="unit[]" required>
       </div>
@@ -238,6 +237,7 @@ async function renderOrder() {
   document.querySelector("#number").value = orderBody.order.number;
   document.querySelector("#provider-readonly").value = orderBody.order.provider.name;
   document.querySelector("#provider_id").value = orderBody.order.provider.id;
+  numberField.classList.remove("edited", true);
 
   const productsContainer = document.querySelector("#products-container tbody");
   productsContainer.innerHTML = "";
@@ -286,8 +286,8 @@ async function saveChanges() {
   console.log("numberField" + numberField.length);
   console.log("providerReadonlyField" + providerReadonlyField.length);
   console.log("editedRows" + editedRows.length);
-
-  if (numberField.length > 0 || providerReadonlyField.length > 0 || editedRows.length > 0) {
+ 
+  if (providerReadonlyField.length > 0 || numberField.length > 0 || editedRows.length > 0){
     await editRow(editedRows);
   }
 
@@ -324,8 +324,19 @@ async function saveChanges() {
       }
       
       const orderId = document.querySelector("#order_id").value;
+      let number;
       const providerId = document.querySelector("#provider_id").value;
-      const number = document.querySelector("#number").value;
+      
+      if (numberField.length>0)
+        {
+          number =  document.querySelector("#number").value;         
+        }
+      else 
+        {
+           number = null;
+        }
+      
+     
 
       const request = JSON.stringify({
         orderId,

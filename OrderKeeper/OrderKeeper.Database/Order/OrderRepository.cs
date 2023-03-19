@@ -53,7 +53,11 @@ public class OrderRepository : AbstractRepository<OrderModel>, IOrderRepository
             throw new Exception("Order is not updated. Data is the same");
         }
 
-        model.UpdateByPatch(patch);
+        if (patch.Number is not null)
+        {
+            model.UpdateByPatch(patch);
+        }
+      
 
         if (orderItemsPatch != null && orderItemsPatch.Count > 0)
         {

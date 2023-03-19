@@ -10,9 +10,8 @@ public class UpdateOrder
 
     [Required]
     public int ProviderId { get; set; }
-
-    [Required]
-    public string Number { get; set; }
+    
+    public string? Number { get; set; }
     
     [Required]
     public List<OrderItemPatch> OrderItems { get; set; }

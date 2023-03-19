@@ -23,6 +23,5 @@ public class OrderItemPatch
         Name = name;
         Quantity = quantity;
         Unit = unit;
-
     }
 }

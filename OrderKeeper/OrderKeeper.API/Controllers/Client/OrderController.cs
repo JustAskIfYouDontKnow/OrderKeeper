@@ -84,6 +84,7 @@ public class OrderController : AbstractClientController
         return Ok();
     }
 
+    
     [HttpPost]
     public async Task<IActionResult> AddItemToOrder(int orderId, [FromBody] List<OrderItemDetail> request)
     {
@@ -130,11 +131,15 @@ public class OrderController : AbstractClientController
         {
             return BadRequest(new {message = "Имя продукта не может совпадать с именем заказа"});
         }
-        
-        if (await IsSingleOrderNumberByProviderId(request.Number, request.ProviderId))
+
+        if (request.Number is not null)
         {
-            return BadRequest(new {message = "Такой номер заказа уже существует"});
+            if (await IsSingleOrderNumberByProviderId(request.Number, request.ProviderId))
+            {
+                return BadRequest(new {message = "Такой номер заказа уже существует"});
+            }
         }
+
 
         await DatabaseContainer.Order.UpdateOrder(order, orderPatch, orderItemsPatch);
 
@@ -223,14 +228,11 @@ public class OrderController : AbstractClientController
             ).ToList()
         }).ToList();
     }
-
-
-
+    
     private async Task<bool> IsProductNameSameAsOrderNumber(string orderNumber, IEnumerable<OrderItemDetail> items)
     {
         return items.Any(item => item.Name == orderNumber);
     }
-
 
     private async Task<bool> IsSingleOrderNumberByProviderId(string number, int providerId)
     {
