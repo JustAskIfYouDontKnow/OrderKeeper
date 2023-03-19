@@ -1,0 +1,269 @@
+﻿@page
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Создание заказа</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body onload="getProviders();">
+<div class="container">
+    <h1 class="mt-3">Создание заказа</h1>
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <form id="order-form">
+                <div class="form-group">
+                    <label for="number">Номер заказа:</label>
+                    <input type="text" class="form-control" id="number" required>
+                </div>
+                <div class="form-group">
+                    <label for="provider">Поставщик:</label>
+                    <select class="form-control" id="provider-form" required></select>
+                </div>
+                <div id="products-container">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Имя товара</th>
+                            <th>Количество</th>
+                            <th>Тип товара</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr class="product-row" required>
+                            <td>
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="product[]" required>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input type="number" class="form-control" name="quantity[]" required>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="unit[]" required>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <button type="button" class="btn btn-danger remove-product">Удалить</button>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="d-flex justify-content-end mt-3">
+                    <button type="button" id="create-order" class="btn btn-primary mr-3">Создать</button>
+                    <button type="button" class="btn btn-primary add-product mr-3">Добавить товар</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="modal fade" id="success-modal" tabindex="-1" role="dialog" aria-labelledby="success-modal-label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="success-modal-label">Заказ успешно создан</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Ваш заказ успешно создан!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.getElementById("create-order").addEventListener("click", (event) => {
+  event.preventDefault();
+  createOrder();
+});
+
+document.querySelector(".add-product").addEventListener("click", addProduct);
+
+document.querySelectorAll(".remove-product").forEach(function (button) {
+  button.addEventListener("click", removeProduct);
+});
+
+async function createOrder() {
+  const orderNumber = document.querySelector("#number").value;
+  const providerId = document.querySelector("#provider-form").value;
+
+  if (!orderNumber) {
+    alert("Введите номер заказа");
+    return;
+  }
+
+  if (!providerId) {
+    alert("Выберите поставщика");
+    return;
+  }
+
+  const products = document.querySelectorAll(".product-row");
+  const items = [];
+
+  for (let i = 0; i < products.length; i++) {
+    const product = products[i];
+    const name = product.querySelector('input[name="product[]"]').value;
+    const quantity = product.querySelector('input[name="quantity[]"]').value;
+    const unit = product.querySelector('input[name="unit[]"]').value;
+
+    if (!name) {
+      alert(`Введите имя товара #${i + 1}`);
+      return;
+    }
+
+    if (!quantity) {
+      alert(`Введите количество для товара #${i + 1}`);
+      return;
+    }
+
+    if (!unit) {
+      alert(`Введите тип товара для товара #${i + 1}`);
+      return;
+    }
+
+    items.push({
+      name: name,
+      quantity: quantity,
+      unit: unit,
+    });
+  }
+
+  const requestBody = JSON.stringify(items);
+
+  try {
+    const response = await fetch(
+      `http://localhost:5196/api/Order/CreateOrder?orderNumber=${encodeURIComponent(orderNumber)}&providerId=${encodeURIComponent(
+        providerId
+      )}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: requestBody,
+      }
+    );
+
+    if (!response.ok) {
+      if (response.status === 400) {
+        const errorResponse = await response.json();
+        throw new Error(errorResponse.message);
+      }
+      throw new Error(`HTTP Error: ${response.status}`);
+    }
+
+    const order = await response.json();
+
+    alert("Заказ создан");
+
+    const productsContainer = document.querySelector("#products-container");
+    productsContainer.innerHTML = `
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Имя товара</th>
+            <th>Количество</th>
+            <th>Тип товара</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="product-row" required>
+            <td>
+              <div class="form-group">
+                <input type="text" class="form-control" name="product[]" required>
+              </div>
+            </td>
+            <td>
+              <div class="form-group">
+                <input type="number" class="form-control" name="quantity[]" required>
+              </div>
+            </td>
+            <td>
+              <div class="form-group">
+                <input type="text" class="form-control" name="unit[]" required>
+              </div>
+            </td>
+            <td>
+              <div class="form-group">
+                <button type="button" class="btn btn-danger remove-product">Удалить</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
+  }
+}
+
+async function getProviders() {
+  fetch("/api/Provider/ListAll")
+    .then((response) => response.json())
+    .then((data) => {
+      const selectElement = document.getElementById("provider-form");
+      selectElement.innerHTML = "";
+      data.forEach((provider) => {
+        const optionElement = document.createElement("option");
+        optionElement.text = provider.name;
+        optionElement.value = provider.id;
+        selectElement.add(optionElement);
+      });
+    });
+}
+
+function removeProduct(event) {
+  event.target.closest(".product-row").remove();
+}
+
+function addProduct() {
+  var row = document.createElement("tr");
+  row.classList.add("product-row");
+  row.innerHTML = `
+            <td>
+                <div class="form-group">
+                    <input type="text" class="form-control" name="product[]" required>
+                </div>
+            </td>
+            <td>
+                <div class="form-group">
+                     <input type="number" class="form-control" name="quantity[]" required>
+                </div>
+            </td>
+            <td>
+                <div class="form-group">
+                    <input type="text" class="form-control" name="unit[]" required>
+                </div>
+            </td>
+            <td>
+                <div class="form-group">
+                    <button type="button" class="btn btn-danger remove-product">Удалить</button>
+                </div>
+            </td>
+        `;
+  document.querySelector("#products-container tbody").appendChild(row);
+  row.querySelector(".remove-product").addEventListener("click", removeProduct);
+}
+</script>
+</body>

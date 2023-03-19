@@ -1,0 +1,245 @@
+﻿@page
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    @* <title>Заказы</title> *@
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <style>
+    .btn-sm {
+    padding: 0.20rem 0.5rem;
+    font-size: 0.6rem;
+    line-height: 1.0;
+    border-radius: 0.3rem;
+     }
+     
+     .btn-sort {
+       float: right;
+     }
+     </style>
+</head>
+<body onload="setDateDefaults(); getProviders();" >
+<div class="container">
+    <h1 class="mt-3">Список заказов</h1>
+    <div class="row mt-3">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Фильтры</h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="startDate">Начальная дата:</label>
+                            <input type="date" class="form-control" id="startDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="endDate">Конечная дата:</label>
+                            <input type="date" class="form-control" id="endDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="provider-form">Поставщик:</label>
+                            <select multiple="multiple" class="form-control" id="provider-form"></select>
+                        </div>
+                        <button id="show-orders-by-date-btn" class="btn btn-primary btn-block mr-2">Применить фильтры</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                      <th>Номер заказа
+                          <button id="sort-order-number-desc-btn" class="btn btn-outline-info btn-sm btn-sort" data-sort="number_asc">▲<i class="fas fa-sort-up"></i>
+                          </button>
+                          <button id="sort-order-number-asc-btn" class="btn btn-outline-info btn-sm btn-sort" data-sort="number_desc">▼<i class="fas fa-sort-down"></i>
+                          </button>
+                      </th>
+                      <th>Дата
+                          <button id="sort-date-desc-btn" class="btn btn-outline-info btn-sm btn-sort" data-sort="date_asc">▲<i class="fas fa-sort-up"></i>
+                      </button>
+                      <button id="sort-date-asc-btn" class="btn btn-outline-info btn-sm btn-sort" data-sort="date_desc">▼<i class="fas fa-sort-down"></i>
+                      </button>
+                    </th>
+                      <th>Поставщик
+                          <button id="sort-provider-desc-btn" class="btn btn-outline-info btn-sm btn-sort" data-sort="provider_asc">▲<i class="fas fa-sort-up"></i>
+                      </button>
+                      <button id="sort-provider-asc-btn" class="btn btn-outline-info btn-sm btn-sort" data-sort="provider_desc">▼<i class="fas fa-sort-down"></i>
+                      </button>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="order-table-body">
+                </tbody>
+              </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+document.getElementById("show-orders-by-date-btn").addEventListener("click", (event) => {
+  event.preventDefault();
+  getOrdersByDate();
+});
+
+document.getElementById("sort-order-number-asc-btn").addEventListener("click", (event) => {
+  handleSortClick(event, "number_asc");
+});
+
+document.getElementById("sort-order-number-desc-btn").addEventListener("click", (event) => {
+  handleSortClick(event, "number_desc");
+});
+
+document.getElementById("sort-date-asc-btn").addEventListener("click", (event) => {
+  handleSortClick(event, "date_asc");
+});
+
+document.getElementById("sort-date-desc-btn").addEventListener("click", (event) => {
+  handleSortClick(event, "date_desc");
+});
+
+document.getElementById("sort-provider-asc-btn").addEventListener("click", (event) => {
+  handleSortClick(event, "provider_asc");
+});
+
+document.getElementById("sort-provider-desc-btn").addEventListener("click", (event) => {
+  handleSortClick(event, "provider_desc");
+});
+
+async function handleSortClick(eventTarget, sortType) {
+  eventTarget.preventDefault();
+  const startDate = document.getElementById("startDate").value;
+  const endDate = document.getElementById("endDate").value;
+  const providerForm = document.getElementById("provider-form");
+  const selectedProviders = [...providerForm.selectedOptions].map((option) => option.value);
+  await getOrdersByDateSort(startDate, endDate, selectedProviders, sortType);
+}
+
+async function getProviders() {
+  fetch("/api/Provider/ListAll")
+    .then((response) => response.json())
+    .then((data) => {
+      const selectElement = document.getElementById("provider-form");
+      selectElement.innerHTML = "";
+      data.forEach((provider) => {
+        const optionElement = document.createElement("option");
+        optionElement.text = provider.name;
+        optionElement.value = provider.id;
+        selectElement.add(optionElement);
+      });
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+}
+
+async function getOrdersByDateSort(startDate, endDate, selectedProviders, sort) {
+  const requestBody = JSON.stringify(selectedProviders);
+  const response = await fetch(
+    `/api/Order/ListOrdersByDateRangeWithSort?startDateTime=${encodeURIComponent(startDate)}&endDateTime=${encodeURIComponent(
+      endDate
+    )}&sortBy=${encodeURIComponent(sort)}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: requestBody,
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Ошибка HTTP: ${response.status}`);
+  }
+
+  const orders = await response.json();
+
+  const orderTableBody = document.getElementById("order-table-body");
+  orderTableBody.innerHTML = "";
+  orders.forEach((order) => {
+    const row = orderTableBody.insertRow();
+    row.insertCell().innerText = order.number;
+    row.insertCell().innerText = formatDate(order.date);
+    row.insertCell().innerText = order.providerId;
+    row.insertCell().innerHTML = `<a href="/OrderKeeper/EditOrder?orderId=${order.id}"><button type="button" class="btn btn-dark">Подробнее</button></a>`;
+  });
+}
+
+async function getOrdersByDate() {
+  const startDate = document.getElementById("startDate").value;
+  const endDate = document.getElementById("endDate").value;
+  const providerForm = document.getElementById("provider-form");
+
+  const selectedProviders = [...providerForm.selectedOptions].map((option) => option.value);
+  const requestBody = JSON.stringify(selectedProviders);
+  const response = await fetch(
+    `/api/Order/ListOrdersByDateRange?startDateTime=${encodeURIComponent(startDate)}&endDateTime=${encodeURIComponent(endDate)}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: requestBody,
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Ошибка HTTP: ${response.status}`);
+  }
+
+  const orders = await response.json();
+
+  const orderTableBody = document.getElementById("order-table-body");
+  orderTableBody.innerHTML = "";
+  orders.forEach((order) => {
+    const row = orderTableBody.insertRow();
+    row.insertCell().innerText = order.number;
+    row.insertCell().innerText = formatDate(order.date);
+    row.insertCell().innerText = order.providerId;
+    row.insertCell().innerHTML = `<a href="/OrderKeeper/EditOrder?orderId=${order.id}"><button type="button" class="btn btn-dark">Подробнее</button></a>`;
+  });
+}
+
+async function getAllOrders() {
+  const response = await fetch("/api/Order/ListAllOrders");
+  const orders = await response.json();
+
+  const orderTableBody = document.getElementById("order-table-body");
+  orderTableBody.innerHTML = "";
+  orders.forEach((order) => {
+    const row = orderTableBody.insertRow();
+    row.insertCell().innerText = order.number;
+    row.insertCell().innerText = order.date;
+    row.insertCell().innerText = order.providerId;
+    row.insertCell().innerHTML = `<a href="/OrderKeeper/EditOrder?orderId=${order.id}"><button type="button" class="btn btn-dark">Подробнее</button></a>`;
+  });
+}
+
+async function setDateDefaults() {
+  const startDate = document.getElementById("startDate");
+  const endDate = document.getElementById("endDate");
+  const today = new Date();
+  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+  startDate.valueAsDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+  endDate.valueAsDate = tomorrow;
+}
+
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = ('0' + (date.getMonth() + 1)).slice(-2);
+  const day = ('0' + date.getDate()).slice(-2);
+  return `${year}-${month}-${day}`;
+}
+</script>
+</body>
+</html>
