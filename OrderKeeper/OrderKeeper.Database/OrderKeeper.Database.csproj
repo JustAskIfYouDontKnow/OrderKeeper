@@ -11,4 +11,8 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.3" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.3" />
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\OrderKeeper.Model\OrderKeeper.Model.csproj" />
+    </ItemGroup>
 </Project>
