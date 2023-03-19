@@ -2,7 +2,7 @@
 
 namespace OrderKeeper.Client.OrderItem;
 
-public class AddItem
+public class OrderItemDetail
 {
     [Required]
     public string Name { get; set; }
