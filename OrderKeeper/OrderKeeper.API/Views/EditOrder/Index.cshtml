@@ -119,6 +119,7 @@ const addProduct = () => {
       </div>
     </td>
     <td>
+    <td>
       <div class="form-group">
         <input type="text" class="form-control" name="unit[]" required>
       </div>
@@ -161,6 +162,24 @@ document.querySelector("#provider-form").addEventListener("click", () => {
 document.querySelector("#edit-order").addEventListener("click", () => {
   editOrder();
 });
+
+document.querySelector("#delete-order").addEventListener("click", () => {
+  deleteOrder();
+});
+
+async function deleteOrder() {
+  const orderId = document.querySelector("#order_id").value;
+  
+  const response = await fetch(`/api/Order/DeleteOrderById?orderId=${orderId}`, {
+    method: "DELETE"
+  });
+  
+  if (response.ok) {
+    window.location.replace("http://localhost:5196/OrderKeeper/Index/");
+  } else {
+    console.error(`Ошибка HTTP: ${response.status}`);
+  }
+}
 
 async function editOrder() {
   const providerFormContainer = document.querySelector("#provider-form-container");
