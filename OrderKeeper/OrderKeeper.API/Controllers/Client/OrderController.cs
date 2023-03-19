@@ -55,9 +55,14 @@ public class OrderController : AbstractClientController
             return BadRequest(new {message = "Заказ не может быть пустым."});
         }
 
-        if (IsProductNameSameAsOrderNumber(orderNumber, items))
+        if (await IsProductNameSameAsOrderNumber(orderNumber, items))
         {
             return BadRequest(new {message = "Имя продукта не может совпадать с именем заказа"});
+        }
+
+        if (await IsSingleOrderNumberByProviderId(orderNumber,providerId))
+        {
+            return BadRequest(new {message = "Такой номер заказа уже существует"});
         }
 
         var order = await DatabaseContainer.Order.CreateOrder(orderNumber, providerId);
@@ -76,7 +81,7 @@ public class OrderController : AbstractClientController
     {
         var order = await DatabaseContainer.Order.GetOne(orderId);
 
-        if (IsProductNameSameAsOrderNumber(order.Number, request))
+        if (await IsProductNameSameAsOrderNumber(order.Number, request))
         {
             return BadRequest(new {message = "Имя продукта не может совпадать с именем заказа"});
         }
@@ -106,6 +111,7 @@ public class OrderController : AbstractClientController
     [HttpPut]
     public async Task<IActionResult> UpdateOrder([FromBody] UpdateOrder request)
     {
+        
         var order = await DatabaseContainer.Order.GetOne(request.OrderId);
 
         var orderPatch = new OrderPatch(request.ProviderId, request.Number);
@@ -115,6 +121,11 @@ public class OrderController : AbstractClientController
         if (orderItemsPatch?.Any(item => item.Name == request.Number) == true)
         {
             return BadRequest(new {message = "Имя продукта не может совпадать с именем заказа"});
+        }
+        
+        if (await IsSingleOrderNumberByProviderId(request.Number, request.ProviderId))
+        {
+            return BadRequest(new {message = "Такой номер заказа уже существует"});
         }
 
         await DatabaseContainer.Order.UpdateOrder(order, orderPatch, orderItemsPatch);
@@ -135,12 +146,7 @@ public class OrderController : AbstractClientController
 
 
     [HttpPost]
-    public async Task<IActionResult> ListOrdersByDateRangeWithSort(
-        DateTime startDateTime,
-        DateTime endDateTime,
-        List<int> providerId,
-        string sortBy
-    )
+    public async Task<IActionResult> ListOrdersByDateRangeWithSort(DateTime startDateTime, DateTime endDateTime, List<int> providerId, string sortBy)
     {
         var utcStartDateTime = startDateTime.ToUniversalTime();
         var utcEndDateTime = endDateTime.ToUniversalTime();
@@ -158,9 +164,16 @@ public class OrderController : AbstractClientController
     }
 
 
-    private bool IsProductNameSameAsOrderNumber(string orderNumber, IEnumerable<OrderItemDetail> items)
+    private async Task<bool> IsProductNameSameAsOrderNumber(string orderNumber, IEnumerable<OrderItemDetail> items)
     {
         return items.Any(item => item.Name == orderNumber);
+    }
+
+
+    private async Task<bool> IsSingleOrderNumberByProviderId(string number, int providerId)
+    {
+        var orders = await DatabaseContainer.Order.GetListByProviderId(providerId);
+        return orders.Any(item => item.Number == number);
     }
 
 }

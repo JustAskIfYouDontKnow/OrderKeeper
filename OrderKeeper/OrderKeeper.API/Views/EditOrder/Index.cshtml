@@ -27,7 +27,7 @@
             <form id="order-form">
                 <div class="form-group">
                     <label for="number">Номер заказа:</label>
-                    <input type="text" class="form-control" id="number" required readonly>
+                    <input type="text" class="form-control order-number" id="number" required readonly>
                 </div>
                 <div class="form-group" id="provider-form-container-current" style="display:block;">
                     <label for="provider-readonly">Текущий поставщик:</label>
@@ -260,7 +260,7 @@ async function renderOrder() {
 }
 
 async function saveChanges() {
-  const numberField = document.querySelectorAll(".number.edited");
+  const numberField = document.querySelectorAll(".order-number.edited");
   const providerReadonlyField = document.querySelectorAll(".prov.edited");
   const editedRows = document.querySelectorAll(".product-row.edited");
 
@@ -327,9 +327,12 @@ async function saveChanges() {
       if (response.ok) {
         console.log("Order updated successfully!");
         editedRows.forEach((row) => row.classList.remove("edited"));
-      } else {
-        console.error("Failed to update order:", await response.text());
-      }
+     } else {
+           const errorResponse = await response.json();
+           const errorMessage = errorResponse.message;
+           console.error("Failed to update order:", errorMessage);
+           alert(errorMessage);
+         }
     } catch (error) {
       console.error("An error occurred while updating the order:", error);
     }
@@ -360,9 +363,12 @@ async function saveChanges() {
 
       if (response.ok) {
         console.log("Order deleted successfully!");
-      } else {
-        console.error("Failed to delete order:", await response.text());
-      }
+     } else {
+           const errorResponse = await response.json();
+           const errorMessage = errorResponse.message;
+           console.error("Failed to delete order:", errorMessage);
+           alert(errorMessage);
+         }
     } catch (error) {
       console.error("An error occurred while delete the order:", error);
     }
@@ -400,8 +406,11 @@ async function saveChanges() {
       if (response.ok) {
         console.log("Order added successfully!");
       } else {
-        console.error("Failed to add order:", await response.text());
-      }
+            const errorResponse = await response.json();
+            const errorMessage = errorResponse.message;
+            console.error("Failed to add in order:", errorMessage);
+            alert(errorMessage);
+          }
     } catch (error) {
       console.error("An error occurred while add the order:", error);
     }

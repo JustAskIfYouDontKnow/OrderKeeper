@@ -119,6 +119,11 @@ public class OrderRepository : AbstractRepository<OrderModel>, IOrderRepository
     }
 
 
+    public async Task<List<OrderModel>> GetListByProviderId(int providerId)
+    {
+        return await DbModel.Include(x => x.OrderItems).Where(x => x.Provider.Id == providerId).ToListAsync();
+    }
+    
 
     public async Task<List<OrderModel>> GetListAllOrders()
     {
