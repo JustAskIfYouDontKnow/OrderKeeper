@@ -34,7 +34,7 @@ public class OrderModel : AbstractModel
         return new OrderModel
         {
             Number = number,
-            Date = DateTime.UtcNow.ToUniversalTime(),
+            Date = DateTime.Now,
             ProviderId = providerId,
         };
     }

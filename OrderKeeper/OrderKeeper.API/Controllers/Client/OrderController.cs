@@ -27,7 +27,7 @@ public class OrderController : AbstractClientController
             {
                 Id = order.Id,
                 Number = order.Number,
-                Date = order.Date,
+                Date = order.Date.ToUniversalTime(),
                 Provider = new Provider()
                 {
                     Id = order.Provider.Id, 
@@ -75,6 +75,14 @@ public class OrderController : AbstractClientController
         return Ok(order);
     }
 
+
+    [HttpDelete]
+    public async Task<IActionResult> DeleteOrderById(int orderId)
+    {
+        var order = await DatabaseContainer.Order.GetOne(orderId);
+        await DatabaseContainer.Order.Delete(order);
+        return Ok();
+    }
 
     [HttpPost]
     public async Task<IActionResult> AddItemToOrder(int orderId, [FromBody] List<OrderItemDetail> request)
@@ -136,32 +144,86 @@ public class OrderController : AbstractClientController
 
 
     [HttpPost]
-    public async Task<IActionResult> ListOrdersByDateRange(DateTime startDateTime, DateTime endDateTime, List<int> providerId)
+    public async Task<List<Order>> ListOrdersByDateRange(DateTime startDateTime, DateTime endDateTime, List<int> providerId)
     {
-        var utcStartDateTime = startDateTime.ToUniversalTime();
-        var utcEndDateTime = endDateTime.ToUniversalTime();
-        var orders = await DatabaseContainer.Order.GetListOrdersByDateRange(utcStartDateTime, utcEndDateTime, providerId, sortBy:null);
-        return Ok(orders);
+        var orders = await DatabaseContainer.Order.GetListOrdersByDateRange(startDateTime, endDateTime, providerId, sortBy:null);
+        return orders.Select(order => new Order
+        {
+            Id = order.Id,
+            Number = order.Number,
+            Date = order.Date.ToUniversalTime(),
+            Provider = new Provider()
+            {
+                Id = order.Provider.Id, 
+                Name = order.Provider.Name
+            },
+            OrderItem = order.OrderItems.Select(
+                oi => new OrderItem()
+                {
+                    Id = oi.Id,
+                    Name = oi.Name,
+                    Quantity = oi.Quantity,
+                    Unit = oi.Unit
+                }
+            ).ToList()
+        }).ToList();
     }
 
 
     [HttpPost]
-    public async Task<IActionResult> ListOrdersByDateRangeWithSort(DateTime startDateTime, DateTime endDateTime, List<int> providerId, string sortBy)
+    public async Task<List<Order>> ListOrdersByDateRangeWithSort(DateTime startDateTime, DateTime endDateTime, List<int> providerId, string sortBy)
     {
-        var utcStartDateTime = startDateTime.ToUniversalTime();
-        var utcEndDateTime = endDateTime.ToUniversalTime();
-        var orders = await DatabaseContainer.Order.GetListOrdersByDateRange(utcStartDateTime, utcEndDateTime, providerId, sortBy);
-
-        return Ok(orders);
+        var orders = await DatabaseContainer.Order.GetListOrdersByDateRange(startDateTime, endDateTime, providerId, sortBy);
+        return orders.Select(order => new Order
+        {
+            Id = order.Id,
+            Number = order.Number,
+            Date = order.Date.ToUniversalTime(),
+            Provider = new Provider()
+            {
+                Id = order.Provider.Id, 
+                Name = order.Provider.Name
+            },
+            OrderItem = order.OrderItems.Select(
+                oi => new OrderItem()
+                {
+                    Id = oi.Id,
+                    Name = oi.Name,
+                    Quantity = oi.Quantity,
+                    Unit = oi.Unit
+                }
+            ).ToList()
+        }).ToList();
     }
 
 
     [HttpGet]
-    public async Task<IActionResult> ListAllOrders()
+    public async Task<List<Order>> ListAllOrders()
     {
         var orders = await DatabaseContainer.Order.GetListAllOrders();
-        return Ok(orders);
+        
+        return orders.Select(order => new Order
+        {
+            Id = order.Id,
+            Number = order.Number,
+            Date = order.Date.ToUniversalTime(),
+            Provider = new Provider()
+            {
+                Id = order.Provider.Id, 
+                Name = order.Provider.Name
+            },
+            OrderItem = order.OrderItems.Select(
+                oi => new OrderItem()
+                {
+                    Id = oi.Id,
+                    Name = oi.Name,
+                    Quantity = oi.Quantity,
+                    Unit = oi.Unit
+                }
+            ).ToList()
+        }).ToList();
     }
+
 
 
     private async Task<bool> IsProductNameSameAsOrderNumber(string orderNumber, IEnumerable<OrderItemDetail> items)

@@ -38,6 +38,13 @@ public class OrderRepository : AbstractRepository<OrderModel>, IOrderRepository
     }
 
 
+    public async Task<bool> Delete(OrderModel order)
+    {
+        await DeleteModel(order);
+        return true;
+    }
+
+
 
     public async Task<OrderModel> UpdateOrder(OrderModel model, OrderPatch patch, List<OrderItemPatch>? orderItemsPatch = null)
     {
@@ -81,7 +88,10 @@ public class OrderRepository : AbstractRepository<OrderModel>, IOrderRepository
         string? sortBy
     )
     {
-        var orders = await DbModel.Where(o => o.Date >= startDateTime && o.Date <= endDateTime && providerId.Contains(o.ProviderId))
+        var orders = await DbModel
+            .Include(x => x.Provider)
+            .Include(x=> x.OrderItems)
+            .Where(o => o.Date >= startDateTime && o.Date <= endDateTime && providerId.Contains(o.ProviderId))
             .ToListAsync();
 
         switch (sortBy)
@@ -127,6 +137,6 @@ public class OrderRepository : AbstractRepository<OrderModel>, IOrderRepository
 
     public async Task<List<OrderModel>> GetListAllOrders()
     {
-        return await DbModel.Include(x => x.OrderItems).ToListAsync();
+        return await DbModel.Include(x => x.OrderItems).Include(x => x.Provider).ToListAsync();
     }
 }

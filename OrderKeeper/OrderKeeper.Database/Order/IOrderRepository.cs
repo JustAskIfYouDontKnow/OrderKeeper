@@ -9,6 +9,8 @@ public interface IOrderRepository
     
     Task<OrderModel> CreateOrder(string number, int providerId);
 
+    Task<bool> Delete(OrderModel order);
+
     Task<OrderModel> UpdateOrder(OrderModel model, OrderPatch patch, List<OrderItemPatch>? orderItemsPatch = null);
 
     Task<List<OrderModel>> GetListOrdersByDateRange(DateTime startDateTime, DateTime endDateTime, List<int> providerId, string? sortBy);
