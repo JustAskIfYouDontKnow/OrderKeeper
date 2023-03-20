@@ -36,7 +36,7 @@ public class ProviderRepository : AbstractRepository<ProviderModel>, IProviderRe
     }
 
 
-    public async Task<List<ProviderModel>> GetAll()
+    public async Task<List<ProviderModel>> ListAll()
     {
         var providers = await DbModel.OrderBy(x => x.Id).ToListAsync();
         return providers.DistinctBy(p => p.Name).ToList();

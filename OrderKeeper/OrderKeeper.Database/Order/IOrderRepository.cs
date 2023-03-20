@@ -9,13 +9,15 @@ public interface IOrderRepository
     
     Task<OrderModel> CreateOrder(string number, int providerId);
 
+    bool IsExistOrderByProviderId(int providerId, string number);
+
     Task<bool> Delete(OrderModel order);
 
     Task<OrderModel> UpdateOrder(OrderModel model, OrderPatch patch, List<OrderItemPatch>? orderItemsPatch = null);
 
-    Task<List<OrderModel>> GetListOrdersByDateRange(DateTime startDateTime, DateTime endDateTime, List<int> providerId, string? sortBy);
+    Task<List<OrderModel>> ListOrdersByDateRange(DateTime startDateTime, DateTime endDateTime, List<int> providerId, string? sortBy);
     
-    Task <List<OrderModel>> GetListByProviderId(int providerId);
+    Task <List<OrderModel>> ListByProviderId(int providerId);
     
-    Task<List<OrderModel>> GetListAllOrders();
+    Task<List<OrderModel>> ListAllOrders();
 }

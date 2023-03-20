@@ -47,6 +47,7 @@ public class OrderModel : AbstractModel
     }
 
 
+
     public void UpdateByPatch(OrderPatch patch)
     {
         ProviderId = patch.ProviderId;

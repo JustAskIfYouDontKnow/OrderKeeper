@@ -38,6 +38,13 @@ public class OrderRepository : AbstractRepository<OrderModel>, IOrderRepository
     }
 
 
+    public bool IsExistOrderByProviderId(int providerId, string number)
+    {
+        return DbModel.Where(x => x.ProviderId == providerId).Any(x => x.Number == number);
+    }
+
+    
+    
     public async Task<bool> Delete(OrderModel order)
     {
         await DeleteModel(order);
@@ -57,22 +64,20 @@ public class OrderRepository : AbstractRepository<OrderModel>, IOrderRepository
         {
             model.UpdateByPatch(patch);
         }
-      
-
-        if (orderItemsPatch != null && orderItemsPatch.Count > 0)
+        
+        
+        foreach (var itemPatch in orderItemsPatch)
         {
-            foreach (var itemPatch in orderItemsPatch)
+            var item = model.OrderItems.FirstOrDefault(x => x.Id == itemPatch.Id);
+
+            if (item == null)
             {
-                var item = model.OrderItems.FirstOrDefault(x => x.Id == itemPatch.Id);
-
-                if (item == null)
-                {
-                    throw new Exception($"Order item with id={itemPatch.Id} not found.");
-                }
-
-                item.UpdateByPatch(itemPatch);
+                throw new Exception($"Order item with id={itemPatch.Id} not found.");
             }
+
+            item.UpdateByPatch(itemPatch);
         }
+    
 
         var result = await UpdateModelAsync(model);
 
@@ -85,7 +90,7 @@ public class OrderRepository : AbstractRepository<OrderModel>, IOrderRepository
     }
 
 
-    public async Task<List<OrderModel>> GetListOrdersByDateRange(
+    public async Task<List<OrderModel>> ListOrdersByDateRange(
         DateTime startDateTime,
         DateTime endDateTime,
         List<int> providerId,
@@ -133,13 +138,13 @@ public class OrderRepository : AbstractRepository<OrderModel>, IOrderRepository
     }
 
 
-    public async Task<List<OrderModel>> GetListByProviderId(int providerId)
+    public async Task<List<OrderModel>> ListByProviderId(int providerId)
     {
         return await DbModel.Include(x => x.OrderItems).Where(x => x.Provider.Id == providerId).ToListAsync();
     }
     
 
-    public async Task<List<OrderModel>> GetListAllOrders()
+    public async Task<List<OrderModel>> ListAllOrders()
     {
         return await DbModel.Include(x => x.OrderItems).Include(x => x.Provider).ToListAsync();
     }

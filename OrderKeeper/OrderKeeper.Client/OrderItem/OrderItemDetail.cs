@@ -13,9 +13,8 @@ public class OrderItemDetail
     [Required]
     public string Unit { get; set; }
     
+    
     public class Response
     {
-        [Required]
-        public Payload.Order.Order Order { get; set; }
     }
 }

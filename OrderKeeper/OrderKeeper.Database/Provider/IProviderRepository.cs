@@ -8,5 +8,5 @@ public interface IProviderRepository
 
     Task<ProviderModel> GetOne(int id);
 
-    Task<List<ProviderModel?>> GetAll();
+    Task<List<ProviderModel?>> ListAll();
 }

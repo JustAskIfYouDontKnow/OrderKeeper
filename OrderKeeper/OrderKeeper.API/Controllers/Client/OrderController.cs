@@ -27,7 +27,7 @@ public class OrderController : AbstractClientController
             {
                 Id = order.Id,
                 Number = order.Number,
-                Date = order.Date.ToUniversalTime(),
+                Date = order.Date.ToString("g"),
                 Provider = new Provider()
                 {
                     Id = order.Provider.Id, 
@@ -55,12 +55,14 @@ public class OrderController : AbstractClientController
             return BadRequest(new {message = "Заказ не может быть пустым."});
         }
 
-        if (await IsProductNameSameAsOrderNumber(orderNumber, items))
+        if (items.Any(item => item.Name == orderNumber))
         {
             return BadRequest(new {message = "Имя продукта не может совпадать с именем заказа"});
         }
 
-        if (await IsSingleOrderNumberByProviderId(orderNumber,providerId))
+        
+        var isExistOrder = DatabaseContainer.Order.IsExistOrderByProviderId(providerId, orderNumber);
+        if (isExistOrder)
         {
             return BadRequest(new {message = "Такой номер заказа уже существует"});
         }
@@ -90,7 +92,7 @@ public class OrderController : AbstractClientController
     {
         var order = await DatabaseContainer.Order.GetOne(orderId);
 
-        if (await IsProductNameSameAsOrderNumber(order.Number, request))
+        if (request.Any(item => item.Name == order.Number))
         {
             return BadRequest(new {message = "Имя продукта не может совпадать с именем заказа"});
         }
@@ -120,26 +122,23 @@ public class OrderController : AbstractClientController
     [HttpPut]
     public async Task<IActionResult> UpdateOrder([FromBody] UpdateOrder request)
     {
-        
         var order = await DatabaseContainer.Order.GetOne(request.OrderId);
 
         var orderPatch = new OrderPatch(request.ProviderId, request.Number);
+        var orderItemsPatch = request.OrderItems.Select(x => new OrderItemPatch(x.Id, x.Name, x.Quantity, x.Unit)).ToList();
 
-        var orderItemsPatch = request.OrderItems?.Select(x => new OrderItemPatch(x.Id, x.Name, x.Quantity, x.Unit)).ToList();
-
-        if (orderItemsPatch?.Any(item => item.Name == request.Number) == true)
+        if (orderItemsPatch.Any(item => item.Name == request.Number))
         {
             return BadRequest(new {message = "Имя продукта не может совпадать с именем заказа"});
         }
 
-        if (request.Number is not null)
-        {
-            if (await IsSingleOrderNumberByProviderId(request.Number, request.ProviderId))
-            {
-                return BadRequest(new {message = "Такой номер заказа уже существует"});
-            }
-        }
 
+        var isExistOrder = DatabaseContainer.Order.IsExistOrderByProviderId(request.ProviderId, request.Number);
+        if (isExistOrder)
+        {
+            return BadRequest(new {message = "Такой номер заказа уже существует"});
+        }
+        
 
         await DatabaseContainer.Order.UpdateOrder(order, orderPatch, orderItemsPatch);
 
@@ -151,12 +150,12 @@ public class OrderController : AbstractClientController
     [HttpPost]
     public async Task<List<Order>> ListOrdersByDateRange(DateTime startDateTime, DateTime endDateTime, List<int> providerId)
     {
-        var orders = await DatabaseContainer.Order.GetListOrdersByDateRange(startDateTime, endDateTime, providerId, sortBy:null);
+        var orders = await DatabaseContainer.Order.ListOrdersByDateRange(startDateTime, endDateTime, providerId, sortBy:null);
         return orders.Select(order => new Order
         {
             Id = order.Id,
             Number = order.Number,
-            Date = order.Date.ToUniversalTime(),
+            Date = order.Date.ToString("g"),
             Provider = new Provider()
             {
                 Id = order.Provider.Id, 
@@ -178,12 +177,12 @@ public class OrderController : AbstractClientController
     [HttpPost]
     public async Task<List<Order>> ListOrdersByDateRangeWithSort(DateTime startDateTime, DateTime endDateTime, List<int> providerId, string sortBy)
     {
-        var orders = await DatabaseContainer.Order.GetListOrdersByDateRange(startDateTime, endDateTime, providerId, sortBy);
+        var orders = await DatabaseContainer.Order.ListOrdersByDateRange(startDateTime, endDateTime, providerId, sortBy);
         return orders.Select(order => new Order
         {
             Id = order.Id,
             Number = order.Number,
-            Date = order.Date.ToUniversalTime(),
+            Date = order.Date.ToString("g"),
             Provider = new Provider()
             {
                 Id = order.Provider.Id, 
@@ -205,13 +204,13 @@ public class OrderController : AbstractClientController
     [HttpGet]
     public async Task<List<Order>> ListAllOrders()
     {
-        var orders = await DatabaseContainer.Order.GetListAllOrders();
+        var orders = await DatabaseContainer.Order.ListAllOrders();
         
         return orders.Select(order => new Order
         {
             Id = order.Id,
             Number = order.Number,
-            Date = order.Date.ToUniversalTime(),
+            Date = order.Date.ToString("g"),
             Provider = new Provider()
             {
                 Id = order.Provider.Id, 
@@ -228,16 +227,4 @@ public class OrderController : AbstractClientController
             ).ToList()
         }).ToList();
     }
-    
-    private async Task<bool> IsProductNameSameAsOrderNumber(string orderNumber, IEnumerable<OrderItemDetail> items)
-    {
-        return items.Any(item => item.Name == orderNumber);
-    }
-
-    private async Task<bool> IsSingleOrderNumberByProviderId(string number, int providerId)
-    {
-        var orders = await DatabaseContainer.Order.GetListByProviderId(providerId);
-        return orders.Any(item => item.Number == number);
-    }
-
 }

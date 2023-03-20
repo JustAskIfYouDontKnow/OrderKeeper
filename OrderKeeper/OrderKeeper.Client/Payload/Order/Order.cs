@@ -18,6 +18,6 @@ public class Order
     public List<OrderItem.OrderItem> OrderItem { get; set; }
 
     [Required]
-    public DateTime Date { get; set; }
+    public string Date { get; set; }
     
 }

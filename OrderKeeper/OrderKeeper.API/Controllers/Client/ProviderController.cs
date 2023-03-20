@@ -25,7 +25,7 @@ public class ProviderController : AbstractClientController
     [HttpGet]
     public async Task<IActionResult> ListAll(int id)
     {
-        var providers = await DatabaseContainer.Provider.GetAll();
+        var providers = await DatabaseContainer.Provider.ListAll();
         return Ok(providers);
     }
     
