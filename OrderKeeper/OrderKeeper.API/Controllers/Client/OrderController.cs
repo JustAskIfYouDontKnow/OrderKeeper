@@ -2,9 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using OrderKeeper.Client.Order;
 using OrderKeeper.Client.OrderItem;
 using OrderKeeper.Client.Payload.Order;
-using OrderKeeper.Client.Payload.OrderItem;
-using OrderKeeper.Client.Payload.Provider;
 using OrderKeeper.Database;
+using OrderKeeper.Database.Service.Order;
 using OrderKeeper.Model.Order;
 using OrderKeeper.Model.OrderItem;
 
@@ -12,38 +11,18 @@ namespace OrderKeeper.API.Controllers.Client;
 
 public class OrderController : AbstractClientController
 {
+    private readonly IOrderService _orderService;
 
-    public OrderController(IDatabaseContainer databaseContainer) : base(databaseContainer) { }
-
+    public OrderController(IDatabaseContainer databaseContainer, IOrderService orderService) : base(databaseContainer)
+    {
+        _orderService = orderService;
+    }
+    
 
     [HttpGet]
     public async Task<GetOneOrder.Response> GetOrder(int orderId)
     {
-        var order = await DatabaseContainer.Order.GetOne(orderId);
-
-        return new GetOneOrder.Response()
-        {
-            Order = new Order
-            {
-                Id = order.Id,
-                Number = order.Number,
-                Date = order.Date.ToString("g"),
-                Provider = new Provider()
-                {
-                    Id = order.Provider.Id, 
-                    Name = order.Provider.Name
-                },
-                OrderItem = order.OrderItems.Select(
-                        oi => new OrderItem()
-                        {
-                            Id = oi.Id,
-                            Name = oi.Name,
-                            Quantity = oi.Quantity,
-                            Unit = oi.Unit
-                        }
-                    ).ToList()
-            }
-        };
+        return await _orderService.GetOrder(orderId);
     }
 
 
@@ -126,19 +105,22 @@ public class OrderController : AbstractClientController
 
         var orderPatch = new OrderPatch(request.ProviderId, request.Number);
         var orderItemsPatch = request.OrderItems.Select(x => new OrderItemPatch(x.Id, x.Name, x.Quantity, x.Unit)).ToList();
+        var existOrderItem = await DatabaseContainer.OrderItem.ListByProviderId(request.ProviderId);
 
-        if (orderItemsPatch.Any(item => item.Name == request.Number))
+        if (existOrderItem.Any(item => item.Name == request.Number) || orderItemsPatch.Any(item => item.Name == request.Number))
         {
             return BadRequest(new {message = "Имя продукта не может совпадать с именем заказа"});
         }
 
-
-        var isExistOrder = DatabaseContainer.Order.IsExistOrderByProviderId(request.ProviderId, request.Number);
-        if (isExistOrder)
+        if (request.ProviderId != order.ProviderId || request.Number != order.Number)
         {
-            return BadRequest(new {message = "Такой номер заказа уже существует"});
+            var isExistOrder = DatabaseContainer.Order.IsExistOrderByProviderId(request.ProviderId, request.Number);
+
+            if (isExistOrder)
+            {
+                return BadRequest(new {message = "Такой номер заказа уже существует"});
+            }
         }
-        
 
         await DatabaseContainer.Order.UpdateOrder(order, orderPatch, orderItemsPatch);
 
@@ -150,81 +132,20 @@ public class OrderController : AbstractClientController
     [HttpPost]
     public async Task<List<Order>> ListOrdersByDateRange(DateTime startDateTime, DateTime endDateTime, List<int> providerId)
     {
-        var orders = await DatabaseContainer.Order.ListOrdersByDateRange(startDateTime, endDateTime, providerId, sortBy:null);
-        return orders.Select(order => new Order
-        {
-            Id = order.Id,
-            Number = order.Number,
-            Date = order.Date.ToString("g"),
-            Provider = new Provider()
-            {
-                Id = order.Provider.Id, 
-                Name = order.Provider.Name
-            },
-            OrderItem = order.OrderItems.Select(
-                oi => new OrderItem()
-                {
-                    Id = oi.Id,
-                    Name = oi.Name,
-                    Quantity = oi.Quantity,
-                    Unit = oi.Unit
-                }
-            ).ToList()
-        }).ToList();
+        return await _orderService.ListOrdersByDateRange(startDateTime, endDateTime, providerId);
     }
 
 
     [HttpPost]
     public async Task<List<Order>> ListOrdersByDateRangeWithSort(DateTime startDateTime, DateTime endDateTime, List<int> providerId, string sortBy)
     {
-        var orders = await DatabaseContainer.Order.ListOrdersByDateRange(startDateTime, endDateTime, providerId, sortBy);
-        return orders.Select(order => new Order
-        {
-            Id = order.Id,
-            Number = order.Number,
-            Date = order.Date.ToString("g"),
-            Provider = new Provider()
-            {
-                Id = order.Provider.Id, 
-                Name = order.Provider.Name
-            },
-            OrderItem = order.OrderItems.Select(
-                oi => new OrderItem()
-                {
-                    Id = oi.Id,
-                    Name = oi.Name,
-                    Quantity = oi.Quantity,
-                    Unit = oi.Unit
-                }
-            ).ToList()
-        }).ToList();
+        return await _orderService.ListOrdersByDateRangeWithSort(startDateTime, endDateTime, providerId, sortBy);
     }
 
 
     [HttpGet]
     public async Task<List<Order>> ListAllOrders()
     {
-        var orders = await DatabaseContainer.Order.ListAllOrders();
-        
-        return orders.Select(order => new Order
-        {
-            Id = order.Id,
-            Number = order.Number,
-            Date = order.Date.ToString("g"),
-            Provider = new Provider()
-            {
-                Id = order.Provider.Id, 
-                Name = order.Provider.Name
-            },
-            OrderItem = order.OrderItems.Select(
-                oi => new OrderItem()
-                {
-                    Id = oi.Id,
-                    Name = oi.Name,
-                    Quantity = oi.Quantity,
-                    Unit = oi.Unit
-                }
-            ).ToList()
-        }).ToList();
+        return await _orderService.ListAllOrders();
     }
 }

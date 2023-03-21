@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using OrderKeeper.Database;
+using OrderKeeper.Database.Service;
+using OrderKeeper.Database.Service.Order;
 
 namespace OrderKeeper.API;
 
@@ -31,6 +33,13 @@ public class Startup
         services.AddControllers();
         services.AddRazorPages();
         services.AddScoped<IDatabaseContainer, DatabaseContainer>();
+        services.AddScoped<IOrderService, OrderService>();
+        
+        services.AddScoped<IServiceContainer, ServiceContainer>(
+            provider => new ServiceContainer(
+                provider.GetRequiredService<IOrderService>()
+            )
+        );
     }
 
 
@@ -55,4 +64,5 @@ public class Startup
             endpoints.MapRazorPages();
         });
     }
+    
 }

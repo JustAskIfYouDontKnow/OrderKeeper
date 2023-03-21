@@ -17,6 +17,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\OrderKeeper.Client\OrderKeeper.Client.csproj" />
+      <ProjectReference Include="..\OrderKeeper.Database.Service\OrderKeeper.Database.Service.csproj" />
       <ProjectReference Include="..\OrderKeeper.Database\OrderKeeper.Database.csproj" />
     </ItemGroup>
 
