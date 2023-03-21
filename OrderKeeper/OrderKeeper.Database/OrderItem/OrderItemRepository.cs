@@ -40,4 +40,9 @@ public class OrderItemRepository : AbstractRepository<OrderItemModel>, IOrderIte
         await DeleteModel(orderItem);
         return true;
     }
+    
+    public async Task<List<OrderItemModel>> ListByProviderId(int providerId)
+    {
+        return await DbModel.Where(x => x.Order.ProviderId == providerId).ToListAsync();
+    }
 }

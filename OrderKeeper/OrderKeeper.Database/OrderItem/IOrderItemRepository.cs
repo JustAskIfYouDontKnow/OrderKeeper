@@ -9,4 +9,6 @@ public interface IOrderItemRepository
 
     Task<bool> DeleteOrderItemFromOrder(OrderItemModel orderItem);
 
+    Task<List<OrderItemModel>> ListByProviderId(int providerId);
+
 }
