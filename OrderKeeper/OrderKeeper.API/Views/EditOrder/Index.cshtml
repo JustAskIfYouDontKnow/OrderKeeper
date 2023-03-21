@@ -134,11 +134,6 @@ const markAsEdited = (event) => {
   row.classList.add("edited");
 };
 
-const numberField = document.getElementById("number");
-numberField.addEventListener("input", () => {
-  numberField.classList.add("edited");
-});
-
 let editing = false;
 
 document.querySelectorAll(".remove-product").forEach((button) => {
@@ -226,15 +221,12 @@ async function getOrder(orderId) {
 }
 
 async function renderOrder() {
-  editing = true;
-  await editOrder();
   const orderId = document.querySelector("#order_id").value;
   const orderBody = await getOrder(orderId);
 
   document.querySelector("#number").value = orderBody.order.number;
   document.querySelector("#provider-readonly").value = orderBody.order.provider.name;
   document.querySelector("#provider_id").value = orderBody.order.provider.id;
-  numberField.classList.remove("edited", true);
 
   const productsContainer = document.querySelector("#products-container tbody");
   productsContainer.innerHTML = "";
@@ -251,43 +243,43 @@ async function renderOrder() {
     row.innerHTML = `
       <td>
         <div class="form-group">
-          <input type="text" class="form-control" name="product[]" value="${item.name}" required readonly>
+          <input type="text" class="form-control" name="product[]" value="${item.name}" readonly>
         </div>
       </td>
       <td>
         <div class="form-group">
-          <input type="number" class="form-control" name="quantity[]" value="${item.quantity}" required readonly>
+          <input type="number" class="form-control" name="quantity[]" value="${item.quantity}" readonly>
         </div>
       </td>
       <td>
         <div class="form-group">
-          <input type="text" class="form-control" name="unit[]" value="${item.unit}" required readonly>
+          <input type="text" class="form-control" name="unit[]" value="${item.unit}" readonly>
         </div>
       </td>
       <td>
         <div class="form-group">
-          <button type="button" id="delete-item" class="btn btn-danger remove-product" style="display:none;">Удалить</button>
-        </div>
+           <button type="button" id="delete-item" class="btn btn-danger remove-product" style="display:none;">Удалить</button>
+       </div>
       </td>
     `;
-    productsContainer.appendChild(row);
     row.querySelector(".remove-product").addEventListener("click", removeProduct);
+    productsContainer.appendChild(row);
   }
+
+  const initialValue = {
+    number: document.querySelector("#number").value,
+    providerName: document.querySelector("#provider-readonly").value,
+    providerId: document.querySelector("#provider_id").value
+    };
+
+  return initialValue;
 }
 
 async function saveChanges() {
-  const numberField = document.querySelectorAll(".order-number.edited");
-  const providerReadonlyField = document.querySelectorAll(".prov.edited");
+
   const editedRows = document.querySelectorAll(".product-row.edited");
-
-  console.log("numberField" + numberField.length);
-  console.log("providerReadonlyField" + providerReadonlyField.length);
-  console.log("editedRows" + editedRows.length);
- 
-  if (providerReadonlyField.length > 0 || numberField.length > 0 || editedRows.length > 0){
-    await editRow(editedRows);
-  }
-
+  await editRow(editedRows);
+  
   const deletedRows = document.querySelectorAll(".product-row.deleted:not(.added)");
 
   if (deletedRows.length > 0) {
@@ -321,20 +313,20 @@ async function saveChanges() {
       }
       
       const orderId = document.querySelector("#order_id").value;
-      let number;
       const providerId = document.querySelector("#provider_id").value;
+        let numberField = document.querySelector(".order-number.edited");
+        let number;
+        if (numberField){
+            number = numberField.value;
+          } else {
+            number = initialValue;
+          }
+        
+      console.log("numberField" + number);
+      console.log("providerReadonlyField" + orderId);
+      console.log("editedRows" + editedRows.length);
+        
       
-      if (numberField.length>0)
-        {
-          number =  document.querySelector("#number").value;         
-        }
-      else 
-        {
-           number = null;
-        }
-      
-     
-
       const request = JSON.stringify({
         orderId,
         providerId,
@@ -443,9 +435,33 @@ async function saveChanges() {
     }
   }
 
+  editing = true;
+  await editOrder();
   await renderOrder();
 }
-renderOrder();
+
+let initialValue;
+
+(async () => {
+  const initialValues = await renderOrder();
+  initialValue = initialValues.number;
+  console.log(initialValue);
+  
+  const numberField = document.getElementById("number");
+  
+  numberField.value = initialValue;
+  let currentValue = initialValue;
+
+  numberField.addEventListener("input", () => {
+    currentValue = numberField.value;
+      console.log(initialValue);
+    if (currentValue !== initialValue && currentValue.length > 0) {
+      numberField.classList.add("edited");
+    } else {
+      numberField.classList.remove("edited");
+    }
+  });
+})();
 </script>
 </body>
 </html>
